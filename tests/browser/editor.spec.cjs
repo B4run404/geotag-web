@@ -5,6 +5,11 @@ const C = require("../../core.js");
 const jpeg = fs.readFileSync(path.join(__dirname, "../fixtures/photo.jpg"));
 const tile = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==", "base64");
 const input = (name = "photo.jpg", buffer = jpeg, mimeType = "image/jpeg") => ({ name, buffer, mimeType });
+const openSettings = async (page) => {
+  if (!await page.locator("#stampSettings").evaluate((element) => element.open)) {
+    await page.locator("#stampSettings > summary").click();
+  }
+};
 
 async function mockServices(context, unavailable = false) {
   await context.route("https://tile.openstreetmap.de/**", (route) => route.fulfill({ status: unavailable ? 503 : 200, contentType: "image/png", body: tile, headers: { "Access-Control-Allow-Origin": "*" } }));
@@ -50,6 +55,8 @@ test("responsive editor starts without JS errors or horizontal overflow", async 
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Setiap foto");
   await expect(page.locator("#btnApply")).toBeDisabled();
   await expect(page.locator("#emptyPreview")).toBeVisible();
+  await expect(page.locator("#stampSettings")).toBeVisible();
+  await expect(page.locator("#stampSettings")).not.toHaveAttribute("open");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("editor-empty.png"), fullPage: true });
   expect(errors).toEqual([]);
@@ -61,6 +68,7 @@ test("preview, theme editing, full-screen, GPS export and original pixel separat
   await page.goto("/");
   await addPhoto(page);
   await chooseLocation(page);
+  await openSettings(page);
   await page.locator("#customTitle").fill("Kunjungan Lapangan");
   await page.locator("#customAddress").fill("Jalan Merdeka 17, Jakarta, Indonesia");
   await page.locator("#customNote").fill("Dokumentasi proyek");
@@ -93,6 +101,7 @@ test("JPEG EXIF-only write and strip preserve original scan and orientation", as
   await page.goto("/");
   await addPhoto(page, input("rotated.jpg", rotated));
   await expect(page.locator("#locationSource")).toHaveText("GPS FOTO");
+  await openSettings(page);
   await page.locator("#stampToggle").uncheck();
   const { bytes } = await exportPhoto(page);
   const metadata = await C.readMetadata(new Blob([bytes]));
@@ -119,18 +128,22 @@ test("invalid coordinates and files do not erase existing photos", async ({ page
   await expect(page.locator("#btnApply")).toBeDisabled();
   await page.locator("#fileInput").setInputFiles(input("bad.jpg", Buffer.from("not jpeg")));
   await expect(page.locator("#operationProgress")).toBeHidden();
-  await expect(page.locator(".file-card")).toHaveCount(2);
-  await expect(page.locator(".file-status.error")).toContainText("Pilih JPEG");
+  await expect(page.locator(".gallery-item")).toHaveCount(1);
+  await expect(page.locator(".file-error")).toHaveCount(1);
+  await expect(page.locator(".file-error .file-status.error")).toContainText("Pilih JPEG");
   await page.locator("#fileInput").setInputFiles([]);
-  await expect(page.locator(".file-card")).toHaveCount(2);
+  await expect(page.locator(".gallery-item")).toHaveCount(1);
+  await expect(page.locator(".file-error")).toHaveCount(1);
   await page.locator('[aria-label="Hapus bad.jpg dari daftar"]').click();
-  await expect(page.locator(".file-card")).toHaveCount(1);
+  await expect(page.locator(".gallery-item")).toHaveCount(1);
+  await expect(page.locator(".file-error")).toHaveCount(0);
 });
 
 test("batch ZIP contains every output and presets persist without personal text", async ({ page }) => {
   await page.goto("/");
   await addPhoto(page, [input("one.jpg"), input("two.jpg")]);
   await chooseLocation(page);
+  await openSettings(page);
   await page.locator("#customTitle").fill("Tidak disimpan permanen");
   await page.locator('input[name="stampTheme"][value="dark"]').check();
   await page.locator("#btnApply").click();
@@ -205,6 +218,41 @@ test("direct camera capture imports the photo and pulls device GPS automatically
   await expect(page.locator("#operationProgress")).toBeHidden();
   await expect(page.locator("#previewBadge")).toHaveText("HASIL");
   await expect(page.locator("#resultInfo")).toContainText("JPEG + GPS");
+  await expect(page.locator(".gallery-item.is-selected .gallery-check")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("gallery marks the newest camera photo and gives quick view and download", async ({ page }) => {
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    navigator.geolocation.getCurrentPosition = (resolve) => {
+      window.releaseGPS = () => resolve({ coords: { latitude: -6.2, longitude: 106.8, accuracy: 10, altitude: null, speed: null }, timestamp: Date.now() });
+    };
+  });
+  await page.goto("/");
+  await page.locator("#fileInput").setInputFiles(input("galeri.jpg"));
+  await expect(page.locator("#operationProgress")).toBeHidden();
+  await expect(page.locator(".gallery-item")).toHaveCount(1);
+  // Foto galeri tidak ditandai BARU; unduh per foto mati karena belum ada hasil.
+  await expect(page.locator(".gallery-badge")).toHaveCount(0);
+  await expect(page.locator('[aria-label="Unduh galeri.jpg"]')).toBeDisabled();
+  // Foto kamera baru ditandai BARU selama GPS belum selesai.
+  await page.locator("#cameraInput").setInputFiles(input("kamera.jpg"));
+  await expect(page.locator("#operationProgress")).toBeHidden();
+  await expect(page.locator(".gallery-item")).toHaveCount(2);
+  await expect(page.locator(".gallery-badge")).toHaveText("BARU");
+  await page.locator('[aria-label="Perbesar kamera.jpg"]').click();
+  await expect(page.locator("#imageDialog")).toBeVisible();
+  await page.locator("#btnCloseImage").click();
+  await page.evaluate(() => window.releaseGPS());
+  await expect(page.locator("#resultPanel")).toBeVisible({ timeout: 30000 });
+  await expect(page.locator(".gallery-badge")).toHaveCount(0);
+  await expect(page.locator(".gallery-item.is-selected .gallery-check")).toBeVisible();
+  const pending = page.waitForEvent("download");
+  await page.locator('[aria-label="Unduh kamera.jpg"]').click();
+  const download = await pending;
+  expect(download.suggestedFilename()).toBe("kamera_geotag.jpg");
   expect(errors).toEqual([]);
 });
 

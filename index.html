@@ -89,31 +89,9 @@
         <p id="coordLabel" class="hint" role="status">Pilih titik yang akan ditulis ke semua foto.</p>
       </section>
 
-      <section class="card settings-card" aria-labelledby="settingsTitle">
-        <div class="section-heading"><h2 id="settingsTitle"><span class="step">03</span> Atur stempel</h2><label class="switch"><input id="stampToggle" type="checkbox" checked aria-label="Tempel stempel visual"><span></span></label></div>
-        <p id="stampModeHint" class="hint">Stempel terlihat di gambar. GPS juga disimpan di metadata.</p>
-        <fieldset id="stampOptions" class="plain-fieldset">
-          <legend class="sr-only">Tampilan stempel</legend>
-          <div class="theme-options" role="group" aria-label="Tema stempel"><label class="theme-choice"><input type="radio" name="stampTheme" value="light" checked><span class="theme-sample light-sample"><i></i><span><b></b><i></i><i></i></span><em></em></span><span>Klasik terang</span></label><label class="theme-choice"><input type="radio" name="stampTheme" value="dark"><span class="theme-sample dark-sample"><i></i><span><b></b><i></i><i></i></span><em></em></span><span>Elegan gelap</span></label></div>
-          <div class="field-grid"><label>Posisi<select id="stampPos"><option value="bottom">Di bawah</option><option value="top">Di atas</option></select></label><label>Detail peta<select id="mapZoom"><option value="14">Area sekitar</option><option value="16" selected>Jalan</option><option value="18">Bangunan</option></select></label></div>
-          <label class="range-label" for="stampWidth">Ukuran stempel <output id="widthValue">94%</output></label><input id="stampWidth" type="range" min="60" max="96" value="94">
-          <label class="range-label" for="stampOpacity">Kepekatan kartu <output id="opacityValue">96%</output></label><input id="stampOpacity" type="range" min="60" max="100" value="96">
-          <details class="settings-details" open><summary>Isi stempel</summary><div class="details-body">
-            <label>Nama tempat <span class="optional">opsional</span><input id="customTitle" type="text" placeholder="Otomatis dari lokasi" maxlength="120"></label>
-            <label>Alamat <span class="optional">opsional</span><textarea id="customAddress" rows="2" placeholder="Otomatis, atau tulis alamat sendiri" maxlength="220"></textarea></label>
-            <label>Catatan <span class="optional">opsional</span><input id="customNote" type="text" placeholder="Mis. Kunjungan lapangan" maxlength="100"></label>
-            <div class="check-grid"><label><input id="showMap" type="checkbox" checked>Peta mini</label><label><input id="showQR" type="checkbox" checked>QR lokasi</label><label><input id="showAddress" type="checkbox" checked>Alamat</label><label><input id="showCoordinates" type="checkbox" checked>Koordinat</label><label><input id="showPlusCode" type="checkbox" checked>Plus Code</label><label><input id="showDate" type="checkbox" checked>Tanggal & jam</label><label><input id="showWeather" type="checkbox">Suhu terkini</label><label><input id="showAltitude" type="checkbox" checked>Ketinggian</label><label><input id="showAccuracy" type="checkbox" checked>Akurasi GPS</label></div>
-          </div></details>
-          <details class="settings-details"><summary>Waktu stempel</summary><div class="details-body"><label>Sumber waktu<select id="timeMode"><option value="photo">Waktu pengambilan foto</option><option value="now">Waktu sesi ini</option><option value="custom">Isi manual</option></select></label><label id="customDateField" hidden>Tanggal & jam<input id="customDate" type="datetime-local"></label></div></details>
-        </fieldset>
-        <details id="exportOptions" class="settings-details"><summary>Kualitas ekspor</summary><div class="details-body"><label>Ukuran sisi terpanjang<select id="maxEdge"><option value="2048">2048 px · hemat ruang</option><option value="3072" selected>3072 px · seimbang</option><option value="4096">4096 px · detail tinggi</option></select></label><label>Kualitas JPEG<select id="jpegQuality"><option value="0.85">85% · ukuran kecil</option><option value="0.94" selected>94% · disarankan</option><option value="1">100% · ukuran besar</option></select></label><p class="hint">Foto kecil tidak diperbesar. EXIF tanpa stempel mempertahankan piksel JPEG asli.</p></div></details>
-        <div class="settings-footer"><button id="btnResetSettings" class="text-button" type="button">Reset tampilan</button><button id="btnStrip" class="text-button danger-text" type="button" disabled>Hapus GPS EXIF</button></div>
-        <p class="hint small-hint">Hapus GPS EXIF membuat salinan dari foto asli; tidak menghapus tulisan yang sudah ada di piksel foto.</p>
-      </section>
-
       <section id="previewPanel" class="preview-panel" aria-labelledby="previewTitle">
         <div class="preview-sticky">
-          <div class="preview-heading"><div><p class="eyebrow">WORKSPACE</p><h2 id="previewTitle">Pratinjau foto</h2></div><div class="preview-tools"><div class="segmented" role="group" aria-label="Bandingkan foto"><button id="btnViewOriginal" type="button" aria-pressed="false">Asli</button><button id="btnViewStamp" type="button" aria-pressed="true">Stempel</button></div><button id="btnExpand" class="icon-button" type="button" aria-label="Perbesar pratinjau" disabled><svg class="icon"><use href="#i-expand"/></svg></button></div></div>
+          <div class="preview-heading"><div><p class="eyebrow">WORKSPACE</p><h2 id="previewTitle">Foto & pengaturan</h2></div><div class="preview-tools"><div class="segmented" role="group" aria-label="Bandingkan foto"><button id="btnViewOriginal" type="button" aria-pressed="false">Asli</button><button id="btnViewStamp" type="button" aria-pressed="true">Stempel</button></div><button id="btnExpand" class="icon-button" type="button" aria-label="Perbesar pratinjau" disabled><svg class="icon"><use href="#i-expand"/></svg></button></div></div>
           <div id="previewStage" class="preview-stage" aria-busy="false">
             <span id="previewBadge" class="preview-badge" hidden>DRAF</span>
             <div id="emptyPreview" class="empty-preview"><div class="empty-art"><div class="art-photo"><svg class="icon"><use href="#i-photo"/></svg></div><div class="art-stamp"><span><svg class="icon"><use href="#i-pin"/></svg></span><div><i></i><i></i><i></i></div><b>GPS</b></div><span class="art-dot one"></span><span class="art-dot two"></span></div><h3>Tempat baru. Cerita baru.</h3><p>Tambahkan foto, pilih lokasi,<br>dan lihat stempelmu muncul di sini.</p></div>
@@ -123,6 +101,29 @@
           <div class="preview-caption"><span id="previewFilename">Belum ada foto dipilih</span><span id="previewDimensions">JPEG OUTPUT</span></div>
           <p id="previewHint" class="hint preview-hint">Hasil diproses di perangkat, bukan diunggah ke server.</p>
           <p id="infoWarning" class="hint warning-text" role="status" hidden></p>
+          <details id="stampSettings" class="settings-drawer">
+            <summary>Atur stempel<span id="settingsSummary">Terang · bawah · 94%</span></summary>
+            <div class="drawer-body">
+              <div class="drawer-switch"><label class="switch"><input id="stampToggle" type="checkbox" checked aria-label="Tempel stempel visual"><span></span></label><p id="stampModeHint" class="hint">Stempel terlihat di gambar. GPS juga disimpan di metadata.</p></div>
+              <fieldset id="stampOptions" class="plain-fieldset">
+                <legend class="sr-only">Tampilan stempel</legend>
+                <div class="theme-options" role="group" aria-label="Tema stempel"><label class="theme-pill"><input type="radio" name="stampTheme" value="light" checked><span>Klasik terang</span></label><label class="theme-pill"><input type="radio" name="stampTheme" value="dark"><span>Elegan gelap</span></label></div>
+                <div class="field-grid"><label>Posisi<select id="stampPos"><option value="bottom">Di bawah</option><option value="top">Di atas</option></select></label><label>Detail peta<select id="mapZoom"><option value="14">Area sekitar</option><option value="16" selected>Jalan</option><option value="18">Bangunan</option></select></label></div>
+                <label class="range-label" for="stampWidth">Ukuran stempel <output id="widthValue">94%</output></label><input id="stampWidth" type="range" min="60" max="96" value="94">
+                <label class="range-label" for="stampOpacity">Kepekatan kartu <output id="opacityValue">96%</output></label><input id="stampOpacity" type="range" min="60" max="100" value="96">
+                <details class="settings-details" open><summary>Isi stempel</summary><div class="details-body">
+                  <label>Nama tempat <span class="optional">opsional</span><input id="customTitle" type="text" placeholder="Otomatis dari lokasi" maxlength="120"></label>
+                  <label>Alamat <span class="optional">opsional</span><textarea id="customAddress" rows="2" placeholder="Otomatis, atau tulis alamat sendiri" maxlength="220"></textarea></label>
+                  <label>Catatan <span class="optional">opsional</span><input id="customNote" type="text" placeholder="Mis. Kunjungan lapangan" maxlength="100"></label>
+                  <div class="check-grid"><label><input id="showMap" type="checkbox" checked>Peta mini</label><label><input id="showQR" type="checkbox" checked>QR lokasi</label><label><input id="showAddress" type="checkbox" checked>Alamat</label><label><input id="showCoordinates" type="checkbox" checked>Koordinat</label><label><input id="showPlusCode" type="checkbox" checked>Plus Code</label><label><input id="showDate" type="checkbox" checked>Tanggal & jam</label><label><input id="showWeather" type="checkbox">Suhu terkini</label><label><input id="showAltitude" type="checkbox" checked>Ketinggian</label><label><input id="showAccuracy" type="checkbox" checked>Akurasi GPS</label></div>
+                </div></details>
+                <details class="settings-details"><summary>Waktu stempel</summary><div class="details-body"><label>Sumber waktu<select id="timeMode"><option value="photo">Waktu pengambilan foto</option><option value="now">Waktu sesi ini</option><option value="custom">Isi manual</option></select></label><label id="customDateField" hidden>Tanggal & jam<input id="customDate" type="datetime-local"></label></div></details>
+              </fieldset>
+              <details id="exportOptions" class="settings-details"><summary>Kualitas ekspor</summary><div class="details-body"><label>Ukuran sisi terpanjang<select id="maxEdge"><option value="2048">2048 px · hemat ruang</option><option value="3072" selected>3072 px · seimbang</option><option value="4096">4096 px · detail tinggi</option></select></label><label>Kualitas JPEG<select id="jpegQuality"><option value="0.85">85% · ukuran kecil</option><option value="0.94" selected>94% · disarankan</option><option value="1">100% · ukuran besar</option></select></label><p class="hint">Foto kecil tidak diperbesar. EXIF tanpa stempel mempertahankan piksel JPEG asli.</p></div></details>
+              <div class="settings-footer"><button id="btnResetSettings" class="text-button" type="button">Reset tampilan</button><button id="btnStrip" class="text-button danger-text" type="button" disabled>Hapus GPS EXIF</button></div>
+              <p class="hint small-hint">Hapus GPS EXIF membuat salinan dari foto asli; tidak menghapus tulisan yang sudah ada di piksel foto.</p>
+            </div>
+          </details>
           <div id="resultPanel" class="result-panel" hidden><div><span class="result-check"><svg class="icon"><use href="#i-check"/></svg></span><div><strong>Fotomu siap disimpan</strong><p id="resultInfo"></p></div></div><p id="resultStale" class="hint warning-text" hidden>Pengaturan berubah. Buat ulang untuk menerapkan perubahan terbaru.</p><div class="button-row"><button id="btnShare" class="btn btn-primary" type="button"><svg class="icon"><use href="#i-share"/></svg>Bagikan / simpan</button><button id="btnDownload" class="btn" type="button"><svg class="icon"><use href="#i-download"/></svg>Unduh JPEG</button></div></div>
           <div class="local-note"><span class="local-icon"><svg class="icon"><use href="#i-check"/></svg></span><div><strong>Fotomu, tetap milikmu.</strong><p>Foto tidak diunggah. Layanan peta, alamat, dan cuaca hanya menerima koordinat yang dipilih.</p></div></div>
         </div>

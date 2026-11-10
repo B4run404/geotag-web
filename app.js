@@ -28,7 +28,7 @@
     locationToken: 0, locating: false, searchToken: 0, searchController: null,
     previewSequence: 0, previewController: null, previewUrl: null,
     common: null, registration: null, updating: false,
-    pendingAutoStamp: false, autoStampItems: null
+    pendingAutoStamp: false, autoStampItems: null, recentCameraId: null
   };
   let previewTimer, toastTimer, previewChain = Promise.resolve(), deferredInstall;
   let map, mapTiles, marker, accuracyCircle;
@@ -97,7 +97,9 @@
     $("btnMyLoc").disabled = busy || state.locating;
     $("btnSearch").disabled = busy || !!state.searchController;
     for (const id of ["btnAddFiles", "btnCamera", "btnClear", "fileInput", "cameraInput", "stampToggle", "searchBox", "latInput", "lngInput", "btnSetManual", "btnResetSettings", "maxEdge", "jpegQuality"]) $(id).disabled = busy;
-    for (const button of $("fileList").querySelectorAll("button")) button.disabled = busy;
+    // Saat sibuk semua tombol galeri dikunci; saat longgar, renderFiles yang
+    // menentukan status tiap tombol (mis. unduh hanya aktif bila hasil ada).
+    if (busy) for (const button of $("fileList").querySelectorAll("button")) button.disabled = true;
     $("stampOptions").disabled = busy || !$("stampToggle").checked;
     $("btnViewOriginal").disabled = busy || !item || !!item.error;
     $("btnViewStamp").disabled = busy || !item || !!item.error;
@@ -110,6 +112,7 @@
     $("opacityValue").value = `${$("stampOpacity").value}%`;
     $("customDateField").hidden = $("timeMode").value !== "custom";
     $("stampModeHint").textContent = $("stampToggle").checked ? "Stempel terlihat di gambar. GPS juga disimpan di metadata." : "Hanya GPS EXIF. Piksel JPEG asli tidak diubah.";
+    $("settingsSummary").textContent = `${document.querySelector('input[name="stampTheme"]:checked').value === "dark" ? "Gelap" : "Terang"} · ${$("stampPos").value === "top" ? "atas" : "bawah"} · ${$("stampWidth").value}%`;
     $("btnClear").hidden = !state.files.length;
     $("dropZone").closest("section").classList.toggle("has-files", !!state.files.length);
     $("batchCount").textContent = list.length ? `${list.length} foto dipilih` : "Belum ada foto";
@@ -127,40 +130,101 @@
   }
 
   function renderFiles() {
-    const fragment = document.createDocumentFragment();
-    for (const item of state.files) {
-      const card = document.createElement("div");
-      card.className = "file-card" + (item.id === state.selectedId ? " is-selected" : "");
-      card.dataset.id = String(item.id);
-      const choose = document.createElement("button");
-      choose.type = "button";
-      choose.className = "select-file";
-      choose.setAttribute("aria-pressed", String(item.id === state.selectedId));
-      choose.setAttribute("aria-label", `Lihat ${item.file.name}`);
-      if (item.originalUrl) {
+    const list = $("fileList");
+    list.replaceChildren();
+    const valid = state.files.filter((item) => !item.error);
+    const failed = state.files.filter((item) => item.error);
+
+    if (valid.length) {
+      const grid = document.createElement("div");
+      grid.className = "gallery";
+      for (const item of valid) {
+        const cell = document.createElement("div");
+        cell.className = "gallery-item" + (item.id === state.selectedId ? " is-selected" : "");
+        const pick = document.createElement("button");
+        pick.type = "button";
+        pick.className = "select-file";
+        pick.setAttribute("aria-pressed", String(item.id === state.selectedId));
+        pick.setAttribute("aria-label", `Lihat ${item.file.name}`);
+        pick.title = `${item.file.name} · ${C.formatBytes(item.file.size)}${item.width ? ` · ${item.width} × ${item.height}` : ""}${item.gps ? " · GPS asli" : ""}`;
         const image = document.createElement("img");
-        image.className = "file-thumb"; image.src = item.originalUrl; image.alt = "";
-        choose.append(image);
+        image.className = "gallery-thumb";
+        image.alt = "";
+        image.src = item.originalUrl || "";
+        pick.append(image);
+        pick.addEventListener("click", () => {
+          if (state.busy) return;
+          state.selectedId = item.id; state.view = "stamp";
+          renderFiles(); updateControls(); schedulePreview(0);
+        });
+        cell.append(pick);
+
+        // Penanda "BARU" untuk foto kamera yang belum jadi hasil.
+        if (item.id === state.recentCameraId && !item.result) {
+          const badge = document.createElement("span");
+          badge.className = "gallery-badge";
+          badge.textContent = "BARU";
+          cell.append(badge);
+        }
+        if (item.result) {
+          const check = document.createElement("span");
+          check.className = "gallery-check";
+          check.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>';
+          cell.append(check);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "gallery-actions";
+        const expand = document.createElement("button");
+        expand.type = "button"; expand.className = "icon-button";
+        expand.setAttribute("aria-label", `Perbesar ${item.file.name}`);
+        expand.title = item.result ? "Lihat hasil" : "Lihat foto asli";
+        expand.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-expand"/></svg>';
+        expand.addEventListener("click", () => openImageItem(item));
+        const download = document.createElement("button");
+        download.type = "button"; download.className = "icon-button";
+        download.setAttribute("aria-label", `Unduh ${item.file.name}`);
+        download.title = "Unduh hasil JPEG";
+        download.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>';
+        download.disabled = !item.result;
+        download.addEventListener("click", () => { if (item.result) downloadItem(item); });
+        const remove = document.createElement("button");
+        remove.type = "button"; remove.className = "icon-button";
+        remove.setAttribute("aria-label", `Hapus ${item.file.name} dari daftar`);
+        remove.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>';
+        remove.addEventListener("click", () => removeFile(item));
+        actions.append(expand, download, remove);
+        cell.append(actions);
+        grid.append(cell);
       }
-      const meta = document.createElement("span");
+      list.append(grid);
+    }
+
+    for (const item of failed) {
+      const row = document.createElement("div");
+      row.className = "file-error";
+      const meta = document.createElement("div");
       meta.className = "file-meta";
-      const name = document.createElement("span"); name.className = "file-name"; name.textContent = item.file.name;
-      const sub = document.createElement("span"); sub.className = "file-sub";
-      sub.textContent = `${C.formatBytes(item.file.size)}${item.width ? ` · ${item.width} × ${item.height}` : ""}${item.gps ? " · GPS asli" : ""}`;
-      const status = document.createElement("span"); status.className = "file-status";
-      status.textContent = item.error || item.processingError || (item.loading ? "Membaca foto…" : item.result ? "✓ Hasil siap" : "Siap diedit");
-      status.classList.toggle("error", !!(item.error || item.processingError));
-      meta.append(name, sub, status); choose.append(meta);
-      choose.addEventListener("click", () => { if (state.busy) return; state.selectedId = item.id; state.view = "stamp"; renderFiles(); updateControls(); schedulePreview(0); });
+      const name = document.createElement("span");
+      name.className = "file-name"; name.textContent = item.file.name;
+      const status = document.createElement("span");
+      status.className = "file-status error"; status.textContent = item.error;
+      meta.append(name, status);
       const remove = document.createElement("button");
-      remove.type = "button"; remove.className = "icon-button file-remove";
+      remove.type = "button"; remove.className = "icon-button";
       remove.setAttribute("aria-label", `Hapus ${item.file.name} dari daftar`);
       remove.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>';
       remove.addEventListener("click", () => removeFile(item));
-      choose.disabled = remove.disabled = state.busy;
-      card.append(choose, remove); fragment.append(card);
+      row.append(meta, remove);
+      list.append(row);
     }
-    $("fileList").replaceChildren(fragment);
+    // renderFiles juga dipanggil di tengah operasi; tombol baru ikut terkunci.
+    if (state.busy) for (const button of list.querySelectorAll("button")) button.disabled = true;
+  }
+
+  function openImageItem(item) {
+    $("fullImage").src = item.result ? item.result.url : item.originalUrl;
+    $("imageDialog").showModal();
   }
 
   function releaseItem(item) {
@@ -246,6 +310,7 @@
           item.originalUrl = URL.createObjectURL(blob);
           added++;
           imported.push(item);
+          if (source === "camera") state.recentCameraId = item.id;
         } catch (error) {
           item.error = error.name === "AbortError" ? "Pembacaan dibatalkan; pilih ulang untuk mencoba lagi." : error.message;
           if (error.name === "AbortError") throw error;
@@ -621,6 +686,10 @@
     if (result) downloadUrl(result.url, result.name);
   }
 
+  function downloadItem(item) {
+    if (item?.result) downloadUrl(item.result.url, item.result.name);
+  }
+
   async function shareResults(batch = false) {
     const list = batch ? results() : [selected()?.result].filter(Boolean);
     if (!list.length || state.busy) return;
@@ -733,7 +802,7 @@
     if (lat === null || lng === null) { $("coordLabel").textContent = "Koordinat tidak valid. Latitude −90…90, longitude −180…180."; return; }
     setTarget(lat, lng);
   });
-  for (const element of document.querySelectorAll(".settings-card input, .settings-card select, .settings-card textarea")) element.addEventListener("input", onSettingsChange);
+  for (const element of document.querySelectorAll("#stampSettings input, #stampSettings select, #stampSettings textarea")) element.addEventListener("input", onSettingsChange);
   $("btnResetSettings").addEventListener("click", () => {
     applyPreferences(defaults);
     for (const id of ["customTitle", "customAddress", "customNote", "customDate"]) $(id).value = "";

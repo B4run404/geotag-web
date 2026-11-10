@@ -11,9 +11,11 @@ Editor dibuka dengan dua pintu masuk:
 
 1. Pilih foto dari galeri, ambil lewat **Kamera**, atau seret file ke editor.
 2. Tentukan lokasi lewat **Lokasi saya**, **Dari foto**, pencarian tempat, pin peta, atau koordinat manual. Lokasi terpilih diterapkan ke seluruh batch.
-3. Atur tema terang/gelap, posisi, ukuran, kepekatan, nama tempat, alamat, dan catatan. Centang informasi yang ingin terlihat.
+3. Atur tema terang/gelap, posisi, ukuran, kepekatan, nama tempat, alamat, dan catatan lewat satu menu **Atur stempel** di bawah foto pratinjau. Centang informasi yang ingin terlihat.
 4. Bandingkan **Asli / Stempel** di pratinjau. Ketuk perbesar untuk melihat lebih jelas.
 5. Tekan **Buat foto**, lalu **Bagikan / simpan**, **Unduh JPEG**, atau **Semua (ZIP)**. Di share sheet iPhone, pilih Simpan Gambar atau Simpan ke File jika tersedia.
+
+Foto yang sudah dibaca tampil sebagai **galeri thumbnail** di kartu Pilih fotomu: foto kamera terbaru diberi penanda **BARU** hingga hasilnya jadi (lalu berganti tanda ✓), dan tiap thumbnail punya tombol lihat, unduh, dan hapus sendiri.
 
 Foto asli tidak ditimpa. Pengaturan yang diubah setelah ekspor diberi penanda agar hasil lama tidak dianggap hasil terbaru. Batch bisa dibatalkan; hasil yang sudah selesai tetap tersedia.
 

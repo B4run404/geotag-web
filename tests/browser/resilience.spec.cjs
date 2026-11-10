@@ -9,10 +9,17 @@ async function setup(page, context) {
   await page.goto("/");
 }
 
+const openSettings = async (page) => {
+  if (!await page.locator("#stampSettings").evaluate((element) => element.open)) {
+    await page.locator("#stampSettings > summary").click();
+  }
+};
+
 async function inputPhoto(page) {
   await page.locator("#fileInput").setInputFiles({ name: "fixture.jpg", mimeType: "image/jpeg", buffer: jpeg });
   await expect(page.locator("#operationProgress")).toBeHidden();
   await expect(page.locator("#batchCount")).toContainText("1 foto");
+  await openSettings(page);
   await page.locator("#showMap").uncheck();
   await page.locator("#showAddress").uncheck();
   await page.locator("#latInput").fill("-6.2"); await page.locator("#lngInput").fill("106.8");
@@ -33,6 +40,7 @@ test("cancelling an async batch unlocks controls and preserves the previous outp
       signal.addEventListener("abort", () => reject(new DOMException("cancel", "AbortError")), { once: true });
     });
   });
+  await openSettings(page);
   await page.locator("#customTitle").fill("Pemrosesan berikutnya");
   await page.locator("#btnApply").click();
   await expect(page.locator("#operationProgress")).toBeVisible();
@@ -95,7 +103,7 @@ test("a cancelled photo import can be retried with the identical file", async ({
     document.getElementById("fileInput").dispatchEvent(new Event("change"));
   });
   await expect(page.locator("#batchCount")).toContainText("1 foto dipilih");
-  await expect(page.locator(".file-card")).toHaveCount(1);
+  await expect(page.locator(".gallery-item")).toHaveCount(1);
   await expect(page.locator(".file-status.error")).toHaveCount(0);
 });
 
@@ -127,6 +135,7 @@ test("PNG export quality remains adjustable with the visual stamp disabled", asy
   await page.locator("#fileInput").setInputFiles({ name: "wide.png", mimeType: "image/png", buffer: Buffer.from(png) });
   await expect(page.locator("#operationProgress")).toBeHidden();
   await page.locator("#latInput").fill("0"); await page.locator("#lngInput").fill("0"); await page.locator("#btnSetManual").click();
+  await openSettings(page);
   await page.locator("#stampToggle").uncheck();
   await page.locator("#exportOptions summary").click();
   await expect(page.locator("#maxEdge")).toBeEnabled();
@@ -151,6 +160,7 @@ test("mobile preview auto-scroll works after import and export", async ({ page, 
     return Math.abs(window.scrollY - Math.max(0, top - 16));
   });
   await expect.poll(expectedScroll).toBeLessThan(24);
+  await openSettings(page);
   await page.locator("#showMap").uncheck();
   await page.locator("#showAddress").uncheck();
   await page.locator("#latInput").fill("-6.2"); await page.locator("#lngInput").fill("106.8");

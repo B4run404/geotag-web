@@ -1,5 +1,5 @@
 // Bump versi bersama setiap rilis shell agar worker lama tetap memakai rilisnya.
-const CACHE_VERSION = "v3.1.0";
+const CACHE_VERSION = "v3.2.0";
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `geotag:${encodeURIComponent(SCOPE.href)}:`;
 const SHELL = `${CACHE_PREFIX}shell-${CACHE_VERSION}`;
