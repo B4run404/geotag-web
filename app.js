@@ -11,13 +11,13 @@
   const C = GeoCore;
   const defaults = {
     enabled: true, theme: "light", position: "bottom", width: 94, opacity: 96,
-    showMap: true, showCoordinates: true, showAddress: true, showPlusCode: true,
+    showMap: true, showQR: true, showCoordinates: true, showAddress: true, showPlusCode: true,
     showDate: true, showWeather: false, showAltitude: true, showAccuracy: true,
     mapZoom: 16, timeMode: "photo", quality: 0.94, maxEdge: 3072
   };
   const fields = {
     enabled: "stampToggle", position: "stampPos", width: "stampWidth", opacity: "stampOpacity",
-    showMap: "showMap", showCoordinates: "showCoordinates", showAddress: "showAddress",
+    showMap: "showMap", showQR: "showQR", showCoordinates: "showCoordinates", showAddress: "showAddress",
     showPlusCode: "showPlusCode", showDate: "showDate", showWeather: "showWeather",
     showAltitude: "showAltitude", showAccuracy: "showAccuracy", mapZoom: "mapZoom",
     timeMode: "timeMode", quality: "jpegQuality", maxEdge: "maxEdge"
@@ -27,7 +27,8 @@
     operation: null, view: "stamp", sessionTime: new Date(), nextId: 1,
     locationToken: 0, locating: false, searchToken: 0, searchController: null,
     previewSequence: 0, previewController: null, previewUrl: null,
-    common: null, registration: null, updating: false
+    common: null, registration: null, updating: false,
+    pendingAutoStamp: false, autoStampItems: null
   };
   let previewTimer, toastTimer, previewChain = Promise.resolve(), deferredInstall;
   let map, mapTiles, marker, accuracyCircle;
@@ -214,6 +215,7 @@
     if (state.busy || !fileList.length) return;
     const signal = beginOperation("import", "Membaca foto…");
     let added = 0, skipped = 0;
+    const imported = [];
     try {
       await previewChain.catch(() => {});
       for (const file of fileList) {
@@ -243,6 +245,7 @@
           checkAbort(signal);
           item.originalUrl = URL.createObjectURL(blob);
           added++;
+          imported.push(item);
         } catch (error) {
           item.error = error.name === "AbortError" ? "Pembacaan dibatalkan; pilih ulang untuk mencoba lagi." : error.message;
           if (error.name === "AbortError") throw error;
@@ -264,12 +267,18 @@
       else toast("Pembacaan dihentikan. Foto yang sudah dibaca tetap tersedia.");
     } finally {
       endOperation();
-      // "Foto langsung": foto barusan diambil, jadi GPS perangkat adalah
-      // lokasi yang paling mungkin benar. Ambil otomatis bila belum ada target.
-      if (source === "camera" && !state.target) locate();
       // Di layar HP pratinjau berada di bawah daftar foto; antar pengguna ke sana.
       const panel = $("previewPanel");
       if (added && panel && window.matchMedia("(max-width: 760px)").matches) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      // "Foto langsung": begitu foto kamera masuk, stempel dibuat otomatis.
+      if (source === "camera" && imported.length) {
+        if (state.target) void processAll("write", imported);
+        else {
+          state.autoStampItems = imported;
+          state.pendingAutoStamp = true;
+          locate();
+        }
+      }
     }
   }
 
@@ -358,6 +367,13 @@
     state.knownAddress = options.address || null;
     state.common = null;
     state.view = "stamp";
+    // GPS datang dari "Foto langsung": lanjutkan membuat stempel otomatis.
+    if (state.pendingAutoStamp && C.validTarget(state.target)) {
+      state.pendingAutoStamp = false;
+      const items = state.autoStampItems;
+      state.autoStampItems = null;
+      if (items?.length) setTimeout(() => { if (!state.busy) void processAll("write", items); }, 450);
+    }
     $("latInput").value = state.target.lat.toFixed(6);
     $("lngInput").value = state.target.lng.toFixed(6);
     $("coordLabel").textContent = `${C.formatCoord(state.target.lat, state.target.lng)}${C.finite(state.target.accuracy) ? ` · akurasi ±${Math.round(state.target.accuracy)} m` : ""}`;
@@ -388,6 +404,11 @@
       state.locating = false;
       const messages = { 1: "Izin lokasi ditolak. Aktifkan izin lokasi untuk Safari atau isi koordinat manual.", 2: "GPS belum tersedia. Coba dekat jendela atau isi koordinat manual.", 3: "GPS belum merespons. Coba lagi." };
       $("coordLabel").textContent = messages[error.code] || "Gagal mengambil lokasi.";
+      if (state.pendingAutoStamp) {
+        state.pendingAutoStamp = false;
+        state.autoStampItems = null;
+        toast("Stempel otomatis ditunda — izinkan lokasi atau pilih lokasi manual, lalu tekan Buat foto.");
+      }
       updateControls();
     }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
   }
@@ -528,11 +549,11 @@
     }
   }
 
-  async function processAll(mode) {
+  async function processAll(mode, items = null) {
     if (state.busy || !readyFiles().length) return;
     const prefs = settings(), target = state.target ? { ...state.target } : null;
     if (mode !== "strip" && !C.validTarget(target)) { toast("Pilih lokasi terlebih dahulu.", true); return; }
-    const files = [...readyFiles()], resultSignature = signature();
+    const files = items ? items.filter((item) => !item.error && !item.loading) : [...readyFiles()], resultSignature = signature();
     const wantStamp = mode !== "strip" && prefs.enabled;
     if (wantStamp && prefs.showDate && prefs.timeMode === "custom") {
       try { C.photoTime({}, "custom", prefs.customDate); } catch (error) { toast(error.message, true); return; }

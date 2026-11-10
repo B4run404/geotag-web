@@ -19,6 +19,7 @@
   <script defer src="vendor/leaflet/leaflet.js"></script>
   <script defer src="vendor/piexif.js"></script>
   <script defer src="vendor/openlocationcode.js"></script>
+  <script defer src="vendor/qrcode.js"></script>
   <script defer src="core.js"></script>
   <script defer src="services.js"></script>
   <script defer src="stamp.js"></script>
@@ -101,7 +102,7 @@
             <label>Nama tempat <span class="optional">opsional</span><input id="customTitle" type="text" placeholder="Otomatis dari lokasi" maxlength="120"></label>
             <label>Alamat <span class="optional">opsional</span><textarea id="customAddress" rows="2" placeholder="Otomatis, atau tulis alamat sendiri" maxlength="220"></textarea></label>
             <label>Catatan <span class="optional">opsional</span><input id="customNote" type="text" placeholder="Mis. Kunjungan lapangan" maxlength="100"></label>
-            <div class="check-grid"><label><input id="showMap" type="checkbox" checked>Peta mini</label><label><input id="showAddress" type="checkbox" checked>Alamat</label><label><input id="showCoordinates" type="checkbox" checked>Koordinat</label><label><input id="showPlusCode" type="checkbox" checked>Plus Code</label><label><input id="showDate" type="checkbox" checked>Tanggal & jam</label><label><input id="showWeather" type="checkbox">Suhu terkini</label><label><input id="showAltitude" type="checkbox" checked>Ketinggian</label><label><input id="showAccuracy" type="checkbox" checked>Akurasi GPS</label></div>
+            <div class="check-grid"><label><input id="showMap" type="checkbox" checked>Peta mini</label><label><input id="showQR" type="checkbox" checked>QR lokasi</label><label><input id="showAddress" type="checkbox" checked>Alamat</label><label><input id="showCoordinates" type="checkbox" checked>Koordinat</label><label><input id="showPlusCode" type="checkbox" checked>Plus Code</label><label><input id="showDate" type="checkbox" checked>Tanggal & jam</label><label><input id="showWeather" type="checkbox">Suhu terkini</label><label><input id="showAltitude" type="checkbox" checked>Ketinggian</label><label><input id="showAccuracy" type="checkbox" checked>Akurasi GPS</label></div>
           </div></details>
           <details class="settings-details"><summary>Waktu stempel</summary><div class="details-body"><label>Sumber waktu<select id="timeMode"><option value="photo">Waktu pengambilan foto</option><option value="now">Waktu sesi ini</option><option value="custom">Isi manual</option></select></label><label id="customDateField" hidden>Tanggal & jam<input id="customDate" type="datetime-local"></label></div></details>
         </fieldset>

@@ -200,8 +200,11 @@ test("direct camera capture imports the photo and pulls device GPS automatically
   await expect(page.locator("#batchCount")).toContainText("1 foto");
   await expect(page.locator("#locationSource")).toHaveText("GPS PERANGKAT");
   await expect(page.locator("#coordLabel")).toContainText("±9 m");
-  // Stempel pratinjau langsung memakai GPS perangkat yang baru diambil.
-  await expect(page.locator("#previewBadge")).toHaveText("DRAF", { timeout: 15000 });
+  // Stempel dibuat otomatis begitu GPS tiba — tanpa menekan "Buat foto".
+  await expect(page.locator("#resultPanel")).toBeVisible({ timeout: 30000 });
+  await expect(page.locator("#operationProgress")).toBeHidden();
+  await expect(page.locator("#previewBadge")).toHaveText("HASIL");
+  await expect(page.locator("#resultInfo")).toContainText("JPEG + GPS");
   expect(errors).toEqual([]);
 });
 

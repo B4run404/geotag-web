@@ -175,11 +175,12 @@ test("vendor assets retain pinned upstream bytes and license files", () => {
   assert.equal(SOURCES.packages.piexifjs.version, "1.0.6");
   assert.equal(SOURCES.packages["open-location-code"].tag, "1.0.4");
   assert.equal(SOURCES.packages["open-location-code"].commit, "2c7115db77a3c4cdd396cdeaddc4ab676216b448");
+  assert.equal(SOURCES.packages["qrcode-generator"].version, "1.4.4");
   for (const file of SOURCES.files) {
     const bytes = fs.readFileSync(path.join(ROOT, file.path));
     const digest = createHash("sha256").update(bytes).digest("base64");
     assert.equal(`sha256-${digest}`, file.integrity, file.path);
-    assert.match(file.url, /@(?:1\.9\.4|1\.0\.6)\/|\/2c7115db77a3c4cdd396cdeaddc4ab676216b448\//);
+    assert.match(file.url, /@(?:1\.9\.4|1\.0\.6|1\.4\.4)\/|\/2c7115db77a3c4cdd396cdeaddc4ab676216b448\/|\/master\/LICENSE$/);
   }
   for (const entry of Object.values(SOURCES.packages)) {
     assert.ok(fs.statSync(path.join(ROOT, entry.licensePath)).size > 1000, entry.licensePath);
@@ -218,7 +219,7 @@ test("vendor classic scripts expose working L, piexif, and OpenLocationCode brow
   browser.window = browser;
   browser.self = browser;
   const context = vm.createContext(browser);
-  for (const file of ["vendor/leaflet/leaflet.js", "vendor/piexif.js", "vendor/openlocationcode.js"]) {
+  for (const file of ["vendor/leaflet/leaflet.js", "vendor/piexif.js", "vendor/openlocationcode.js", "vendor/qrcode.js"]) {
     vm.runInContext(fs.readFileSync(path.join(ROOT, file), "utf8"), context, { filename: file });
   }
   assert.equal(browser.L.version, "1.9.4");
@@ -233,6 +234,12 @@ test("vendor classic scripts expose working L, piexif, and OpenLocationCode brow
   assert.equal(typeof piexif.remove, "function");
   assert.equal(OpenLocationCode.encode(47.36559, 8.524997, 10), "8FVC9G8F+6X");
   assert.equal(OpenLocationCode.isFull("8FVC9G8F+6X"), true);
+  assert.equal(typeof browser.qrcode, "function");
+  const qr = browser.qrcode(0, "M");
+  qr.addData("https://maps.google.com/?q=-6.208800,106.845600");
+  qr.make();
+  assert.equal(qr.getModuleCount(), 33);
+  assert.ok(qr.isDark(4, 4));
 });
 
 test("install precaches the complete local runtime before first offline activation", async () => {

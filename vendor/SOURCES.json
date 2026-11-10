@@ -22,6 +22,13 @@
       "license": "Apache-2.0",
       "licensePath": "vendor/openlocationcode.LICENSE",
       "repository": "https://github.com/google/open-location-code/tree/2c7115db77a3c4cdd396cdeaddc4ab676216b448"
+    },
+    "qrcode-generator": {
+      "version": "1.4.4",
+      "global": "qrcode",
+      "license": "MIT",
+      "licensePath": "vendor/qrcode.LICENSE",
+      "registry": "https://registry.npmjs.org/qrcode-generator/1.4.4"
     }
   },
   "files": [
@@ -84,6 +91,16 @@
       "path": "vendor/openlocationcode.LICENSE",
       "url": "https://raw.githubusercontent.com/google/open-location-code/2c7115db77a3c4cdd396cdeaddc4ab676216b448/LICENSE",
       "integrity": "sha256-z8d0m5b2O9McPEK1xHG/dWgUBT6EfBDz6wA0F7xSPTA="
+    },
+    {
+      "path": "vendor/qrcode.js",
+      "url": "https://unpkg.com/qrcode-generator@1.4.4/qrcode.js",
+      "integrity": "sha256-GK45n4EYK8nekW6cd7GV3yDMWNby1VpisIWimfG/F4A="
+    },
+    {
+      "path": "vendor/qrcode.LICENSE",
+      "url": "https://raw.githubusercontent.com/kazuhikoarase/qrcode-generator/master/LICENSE",
+      "integrity": "sha256-OoUPpfCBAdtvQGdsJ4bhC9LNX/97Ev/fHgxDTU5J2Qw="
     }
   ]
 }

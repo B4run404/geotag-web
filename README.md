@@ -6,7 +6,7 @@ PWA untuk iPhone dan desktop: tambahkan kartu peta, alamat, koordinat, dan waktu
 
 Editor dibuka dengan dua pintu masuk:
 
-- **Foto langsung** — membuka kamera perangkat (tombol kamera pada pemilih iOS). Begitu foto diambil, aplikasi otomatis mengambil GPS perangkat untuk foto baru tersebut; tinggal tekan **Buat foto**. GPS tidak diminta sebelum kamu memakai fitur ini atau menekan **Lokasi saya**.
+- **Foto langsung** — membuka kamera perangkat (tombol kamera pada pemilih iOS). Begitu foto diambil, aplikasi otomatis mengambil GPS perangkat **dan langsung membuat foto yang sudah terstempel** — tinggal simpan. GPS tidak diminta sebelum kamu memakai fitur ini atau menekan **Lokasi saya**. Bila izin lokasi ditolak, stempel otomatis ditunda dan foto tetap bisa diproses manual.
 - **Pilih gambar** — galeri/Files, bisa banyak foto sekaligus, atau seret ke editor. Lokasi diatur manual (peta, pencarian, koordinat, **Dari foto**).
 
 1. Pilih foto dari galeri, ambil lewat **Kamera**, atau seret file ke editor.
@@ -19,7 +19,7 @@ Foto asli tidak ditimpa. Pengaturan yang diubah setelah ekspor diberi penanda ag
 
 Peta jalan memakai OpenStreetMap DE / FOSSGIS, bukan server tile OSM utama yang sebelumnya menampilkan "Access blocked". Sumber yang sama dipakai pada editor dan stempel. Kontrol +/−, skala meter, geser/pinch, dan tombol pusatkan ke pin tersedia. Respons 403/429/HTML tidak digambar sebagai tile; tombol **Muat ulang peta** tersedia jika pemuatan gagal.
 
-Kartu stempel dirancang ringkas: judul, alamat, koordinat DMS, Plus Code, dan waktu dalam blok teks rapat, peta mini proporsional, serta metrik (ketinggian/akurasi/kecepatan/suhu) sebagai satu baris ikon + nilai tanpa label besar — sehingga kartu hanya menutup sebagian kecil foto pada orientasi apa pun. Di layar HP, editor otomatis menggulir ke pratinjau setelah foto dibaca dan setelah hasil selesai dibuat.
+Kartu stempel dirancang ringkas: judul, alamat, koordinat DMS, Plus Code, dan waktu dalam blok teks rapat, peta mini proporsional, metrik (ketinggian/akurasi/kecepatan/suhu) sebagai satu baris ikon + nilai, serta **QR lokasi di sisi kanan** — dipindai kamera ponsel mana pun akan membuka Google Maps tepat di koordinat foto tersebut. QR dibuat lokal dari koordinat terpilih (bukan layanan pihak ketiga) dan bisa dimatikan lewat isi stempel. Di layar HP, editor otomatis menggulir ke pratinjau setelah foto dibaca dan setelah hasil selesai dibuat.
 
 ### Foto dan metadata
 
@@ -102,4 +102,4 @@ Tes browser memakai Chrome yang terpasang dan WebKit dengan profil iPhone 13, me
 - `tests/sw.test.cjs`: precache, integritas vendor, isolasi scope, update waiting worker, kegagalan jaringan/storage, batas cache tile.
 - `tests/browser/`: unggah → pratinjau → ekspor, tema, batch ZIP, JPEG/PNG, error, geolokasi, dan WebKit responsif.
 
-Dependensi runtime vendored: Leaflet 1.9.4, piexifjs 1.0.6, Open Location Code tag 1.0.4. Versi, URL upstream, SHA-256, dan lisensi dicatat di `vendor/SOURCES.json`.
+Dependensi runtime vendored: Leaflet 1.9.4, piexifjs 1.0.6, Open Location Code tag 1.0.4, qrcode-generator 1.4.4. Versi, URL upstream, SHA-256, dan lisensi dicatat di `vendor/SOURCES.json`.

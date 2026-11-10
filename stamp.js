@@ -7,6 +7,8 @@ window.GeoStamp = (() => {
   const PAD = 22;
   const MAP_SIZE = 168;
   const MAP_GAP = 20;
+  const QR_SIZE = 168;
+  const QR_GUTTER = 196;
   const PIN_GUTTER = 72;
   const SHADOW_SPACE = 14;
   const MAX_TEXT_LENGTH = 8192;
@@ -48,6 +50,7 @@ window.GeoStamp = (() => {
       width: clamp(s.width, 60, 96, 94),
       opacity: clamp(s.opacity, 60, 100, 96),
       showMap: s.showMap !== false,
+      showQR: s.showQR !== false,
       showCoordinates: s.showCoordinates !== false,
       showAddress: s.showAddress !== false,
       showPlusCode: s.showPlusCode !== false,
@@ -242,7 +245,8 @@ window.GeoStamp = (() => {
 
   function makeLayout(ctx, target, info, s) {
     const textX = PAD + (s.showMap ? MAP_SIZE + MAP_GAP : 0);
-    const textWidth = CARD_WIDTH - PAD - PIN_GUTTER - textX;
+    const rightGutter = s.showQR ? QR_GUTTER : PIN_GUTTER;
+    const textWidth = CARD_WIDTH - PAD - rightGutter - textX;
     const rows = [];
     let textHeight = 0;
 
@@ -299,10 +303,54 @@ window.GeoStamp = (() => {
       metrics.push({ icon: "weather", value: `Kini ${numberFormat.format(info.temp)}°C` });
     }
 
-    const bodyHeight = Math.max(s.showMap ? MAP_SIZE : 118, textHeight);
+    const bodyHeight = Math.max(s.showMap ? MAP_SIZE : 118, textHeight, s.showQR ? QR_SIZE : 0);
     const footerY = PAD + bodyHeight + 13;
     const height = metrics.length ? footerY + 9 + 26 + 15 : PAD * 2 + bodyHeight;
     return { textX, textWidth, textHeight, rows, metrics, bodyHeight, footerY, height };
+  }
+
+  // QR berisi URL Google Maps untuk koordinat persis ini — kamera ponsel
+  // mana pun bisa memindainya dan langsung membuka lokasi.
+  function qrPayload(target) {
+    return `https://maps.google.com/?q=${target.lat.toFixed(6)},${target.lng.toFixed(6)}`;
+  }
+
+  function drawQr(ctx, x, y, size, payload, palette) {
+    ctx.save();
+    roundRect(ctx, x, y, size, size, 14);
+    ctx.clip();
+    // Pelat selalu terang: QR wajib kontras gelap-di-terang agar terbaca.
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(x, y, size, size);
+    let matrix = null, count = 0;
+    if (typeof window.qrcode === "function") {
+      try {
+        const qr = window.qrcode(0, "M");
+        qr.addData(payload);
+        qr.make();
+        count = qr.getModuleCount();
+        matrix = qr;
+      } catch { /* data terlalu panjang untuk satu QR; gambar fallback. */ }
+    }
+    if (matrix) {
+      const quiet = size * 0.06;
+      const cell = (size - quiet * 2) / count;
+      ctx.fillStyle = "#12161d";
+      // +0.35 menutup celah antarmodul agar hasil JPEG tidak menghasilkan garis putih.
+      for (let row = 0; row < count; row++) {
+        for (let col = 0; col < count; col++) {
+          if (matrix.isDark(row, col)) ctx.fillRect(x + quiet + col * cell, y + quiet + row * cell, cell + 0.35, cell + 0.35);
+        }
+      }
+    } else {
+      drawPin(ctx, x + size / 2, y + size * 0.68, size * 0.36, palette.accent, true);
+      fittedText(ctx, "Lihat metadata GPS", x + size / 2, y + size * 0.86, size - 16, 13, 500, "#516074", "center");
+    }
+    ctx.restore();
+    roundRect(ctx, x, y, size, size, 14);
+    ctx.strokeStyle = palette.line;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
   }
 
   function drawMap(ctx, x, y, size, info, palette) {
@@ -434,17 +482,21 @@ window.GeoStamp = (() => {
           layout.textWidth - row.inset, row.size, row.weight, palette[row.color]);
       }
 
-      const pinX = CARD_WIDTH - PAD - 30;
-      const pinY = PAD + layout.bodyHeight * 0.44;
-      ctx.fillStyle = palette.accentSoft;
-      ctx.beginPath();
-      ctx.arc(pinX, pinY, 30, 0, Math.PI * 2);
-      ctx.fill();
-      drawPin(ctx, pinX, pinY + 22, 44, palette.accent);
-      ctx.fillStyle = palette.badge;
-      roundRect(ctx, pinX - 28, pinY + 40, 56, 18, 9);
-      ctx.fill();
-      fittedText(ctx, "GeoTag", pinX, pinY + 49, 52, 10.5, 700, palette.secondary, "center");
+      if (s.showQR) {
+        drawQr(ctx, CARD_WIDTH - PAD - QR_SIZE, PAD + (layout.bodyHeight - QR_SIZE) / 2, QR_SIZE, qrPayload(target), palette);
+      } else {
+        const pinX = CARD_WIDTH - PAD - 30;
+        const pinY = PAD + layout.bodyHeight * 0.44;
+        ctx.fillStyle = palette.accentSoft;
+        ctx.beginPath();
+        ctx.arc(pinX, pinY, 30, 0, Math.PI * 2);
+        ctx.fill();
+        drawPin(ctx, pinX, pinY + 22, 44, palette.accent);
+        ctx.fillStyle = palette.badge;
+        roundRect(ctx, pinX - 28, pinY + 40, 56, 18, 9);
+        ctx.fill();
+        fittedText(ctx, "GeoTag", pinX, pinY + 49, 52, 10.5, 700, palette.secondary, "center");
+      }
       drawMetrics(ctx, layout, palette);
       return { x, y, width: stampWidth, height: stampHeight };
     } finally {

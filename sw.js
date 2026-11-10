@@ -1,5 +1,5 @@
 // Bump versi bersama setiap rilis shell agar worker lama tetap memakai rilisnya.
-const CACHE_VERSION = "v3.0.3";
+const CACHE_VERSION = "v3.1.0";
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `geotag:${encodeURIComponent(SCOPE.href)}:`;
 const SHELL = `${CACHE_PREFIX}shell-${CACHE_VERSION}`;
@@ -30,6 +30,8 @@ const SHELL_ASSETS = [
   "vendor/piexif.LICENSE.txt",
   "vendor/openlocationcode.js",
   "vendor/openlocationcode.LICENSE",
+  "vendor/qrcode.js",
+  "vendor/qrcode.LICENSE",
   "vendor/SOURCES.json"
 ];
 const SHELL_URLS = new Set(SHELL_ASSETS.map((path) => new URL(path, SCOPE).href));

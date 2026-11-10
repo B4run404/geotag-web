@@ -51,6 +51,37 @@ test("compact stamp keeps full text inside a low card on every orientation", asy
   expect(text).not.toContain("KECEPATAN");
 });
 
+test("QR panel encodes the exact map location as scannable modules", async ({ page }) => {
+  await page.goto("/");
+  const result = await page.evaluate(() => {
+    const canvas = document.createElement("canvas"); canvas.width = 1800; canvas.height = 1200;
+    const ctx = canvas.getContext("2d");
+    const target = { lat: -6.2088, lng: 106.8456 };
+    const modules = [];
+    const original = ctx.fillRect.bind(ctx);
+    ctx.fillRect = (x, y, width, height) => { if (width < 8 && height < 8) modules.push(x); original(x, y, width, height); };
+    const box = GeoStamp.drawStamp(ctx, 1800, 1200, target, { map: null, mapAvailable: false, mapCredit: "" }, { enabled: true, theme: "dark", showMap: false, showQR: true, showAddress: false, showCoordinates: true, showPlusCode: false, showDate: false, showAltitude: false, showAccuracy: false });
+    const qr = qrcode(0, "M");
+    qr.addData(`https://maps.google.com/?q=${target.lat.toFixed(6)},${target.lng.toFixed(6)}`);
+    qr.make();
+    let dark = 0;
+    for (let row = 0; row < qr.getModuleCount(); row++) {
+      for (let col = 0; col < qr.getModuleCount(); col++) if (qr.isDark(row, col)) dark++;
+    }
+    return { box, drawn: modules.length, dark, count: qr.getModuleCount(), rightEdge: modules.length ? Math.max(...modules) : 0 };
+  });
+  expect(result.box).not.toBeNull();
+  expect(result.count).toBe(33);
+  // Jumlah modul yang digambar persis sama dengan matriks QR untuk URL lokasi ini.
+  expect(result.drawn).toBe(result.dark);
+  // Koordinat dalam ruang kartu (lebar 1000): blok QR 810..978 — sisi kanan kartu.
+  expect(result.rightEdge).toBeGreaterThan(900);
+  expect(result.rightEdge).toBeLessThan(990);
+  // Kartu tetap di dalam gambar.
+  expect(result.box.x + result.box.width).toBeLessThanOrEqual(1800.01);
+  expect(result.box.y + result.box.height).toBeLessThanOrEqual(1200.01);
+});
+
 test("metrics without footer stay within the card when toggles are combined", async ({ page }) => {
   await page.goto("/");
   const boxes = await page.evaluate(({ fullSettings, fullInfo }) => {
