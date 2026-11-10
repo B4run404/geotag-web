@@ -1,0 +1,15 @@
+{
+  "name": "geotag-web",
+  "version": "3.0.3",
+  "private": true,
+  "description": "PWA stempel foto GPS, tanpa build dan tanpa iklan",
+  "scripts": {
+    "start": "node dev-server.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "test:browser": "playwright test",
+    "check": "node --check app.js && node --check core.js && node --check services.js && node --check stamp.js && node --check sw.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  }
+}

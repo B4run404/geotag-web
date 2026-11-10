@@ -1,0 +1,89 @@
+{
+  "description": "Unmodified upstream browser assets. SHA-256 values cover the exact downloaded bytes.",
+  "packages": {
+    "leaflet": {
+      "version": "1.9.4",
+      "global": "L",
+      "license": "BSD-2-Clause",
+      "licensePath": "vendor/leaflet/LICENSE",
+      "registry": "https://registry.npmjs.org/leaflet/1.9.4"
+    },
+    "piexifjs": {
+      "version": "1.0.6",
+      "global": "piexif",
+      "license": "MIT",
+      "licensePath": "vendor/piexif.LICENSE.txt",
+      "registry": "https://registry.npmjs.org/piexifjs/1.0.6"
+    },
+    "open-location-code": {
+      "tag": "1.0.4",
+      "commit": "2c7115db77a3c4cdd396cdeaddc4ab676216b448",
+      "global": "OpenLocationCode",
+      "license": "Apache-2.0",
+      "licensePath": "vendor/openlocationcode.LICENSE",
+      "repository": "https://github.com/google/open-location-code/tree/2c7115db77a3c4cdd396cdeaddc4ab676216b448"
+    }
+  },
+  "files": [
+    {
+      "path": "vendor/leaflet/leaflet.js",
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+      "integrity": "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    },
+    {
+      "path": "vendor/leaflet/leaflet.css",
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+      "integrity": "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    },
+    {
+      "path": "vendor/leaflet/images/layers.png",
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/images/layers.png",
+      "integrity": "sha256-Hbvp0CjikvNvy6j4s6KNXokydU/CIVuaxp5M3s9RB8Y="
+    },
+    {
+      "path": "vendor/leaflet/images/layers-2x.png",
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/images/layers-2x.png",
+      "integrity": "sha256-Bm2sqFDY/77wB68AsG6sABVyje4nnFHzy2xxbffELt8="
+    },
+    {
+      "path": "vendor/leaflet/images/marker-icon.png",
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      "integrity": "sha256-V0w6XMqF9BFAhbaEFZbWLwDXyJLHsD8oy/owHesdxDc="
+    },
+    {
+      "path": "vendor/leaflet/images/marker-icon-2x.png",
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+      "integrity": "sha256-ABecTB7oMNOhCEEq4NKU9Vd2z+sIXGASmjmqb8SuJSg="
+    },
+    {
+      "path": "vendor/leaflet/images/marker-shadow.png",
+      "url": "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      "integrity": "sha256-Jk9cZAM58ELdcpBiz8BMF/jqDymIK1OOOEjtjxDttNo="
+    },
+    {
+      "path": "vendor/leaflet/LICENSE",
+      "url": "https://unpkg.com/leaflet@1.9.4/LICENSE",
+      "integrity": "sha256-U+jcJYYgFOQyR0HKGPvjYR4R1C72n1n4bqjFOJZH1Ms="
+    },
+    {
+      "path": "vendor/piexif.js",
+      "url": "https://unpkg.com/piexifjs@1.0.6/piexif.js",
+      "integrity": "sha256-p5n27Mp50rOcFPONla2DkH9KoNBk3BenFIh30fW9LQ0="
+    },
+    {
+      "path": "vendor/piexif.LICENSE.txt",
+      "url": "https://unpkg.com/piexifjs@1.0.6/LICENSE.txt",
+      "integrity": "sha256-SzpuiLIFZfZDXU1Z7E5iBO2depIvYHYwEiRtsyzS3hs="
+    },
+    {
+      "path": "vendor/openlocationcode.js",
+      "url": "https://raw.githubusercontent.com/google/open-location-code/2c7115db77a3c4cdd396cdeaddc4ab676216b448/js/src/openlocationcode.js",
+      "integrity": "sha256-S47mk9IxNLbdG3OLB1IrV2/Om9Czv8/eyxcd8FmVsjY="
+    },
+    {
+      "path": "vendor/openlocationcode.LICENSE",
+      "url": "https://raw.githubusercontent.com/google/open-location-code/2c7115db77a3c4cdd396cdeaddc4ab676216b448/LICENSE",
+      "integrity": "sha256-z8d0m5b2O9McPEK1xHG/dWgUBT6EfBDz6wA0F7xSPTA="
+    }
+  ]
+}
